@@ -1,0 +1,54 @@
+import type { TransactionStatus, PendingTransaction } from "@/types";
+
+/**
+ * Format a token balance for display with appropriate decimals (readable, compact).
+ * Use across components for consistent token amount display.
+ */
+export function formatTokenAmount(value: string | number, maxDecimals = 8): string {
+  const n = typeof value === "string" ? parseFloat(value) : value;
+  if (!Number.isFinite(n) || n === 0) return "0";
+  if (n >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, "") + "B";
+  if (n >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, "") + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(2).replace(/\.?0+$/, "") + "K";
+  if (n >= 1)
+    return n.toLocaleString("en-US", { maximumFractionDigits: 4, minimumFractionDigits: 0 });
+  if (n >= 0.01) return n.toFixed(4).replace(/\.?0+$/, "") || "0";
+  if (n >= 0.0001) return n.toFixed(6).replace(/\.?0+$/, "") || "0";
+  const s = n.toFixed(maxDecimals).replace(/\.?0+$/, "");
+  return s || "0";
+}
+
+export function truncateAddress(addr: string): string {
+  if (addr.length <= 12) return addr;
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+}
+
+export function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function getTransactionStatus(tx: PendingTransaction): TransactionStatus {
+  if (tx.rejected) return "rejected";
+  if (tx.executedAt) return "executed";
+  if (tx.inReview) return "in_review";
+  return "pending";
+}
+
+export function statusLabel(status: TransactionStatus): string {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "in_review":
+      return "In Review";
+    case "executed":
+      return "Executed";
+    case "rejected":
+      return "Rejected";
+  }
+}
